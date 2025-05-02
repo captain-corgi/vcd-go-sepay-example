@@ -168,28 +168,28 @@ func setDefaults(v *viper.Viper) {
 // bindEnvVariables binds environment variables to viper configuration
 func bindEnvVariables(v *viper.Viper) {
 	// Server configuration
-	v.BindEnv("server.port", "SERVER_PORT")
-	v.BindEnv("server.read_timeout", "SERVER_READ_TIMEOUT")
-	v.BindEnv("server.write_timeout", "SERVER_WRITE_TIMEOUT")
-	v.BindEnv("server.shutdown_timeout", "SERVER_SHUTDOWN_TIMEOUT")
+	_ = v.BindEnv("server.port", "SERVER_PORT")
+	_ = v.BindEnv("server.read_timeout", "SERVER_READ_TIMEOUT")
+	_ = v.BindEnv("server.write_timeout", "SERVER_WRITE_TIMEOUT")
+	_ = v.BindEnv("server.shutdown_timeout", "SERVER_SHUTDOWN_TIMEOUT")
 
 	// Database configuration
-	v.BindEnv("database.driver", "DB_DRIVER")
-	v.BindEnv("database.host", "DB_HOST")
-	v.BindEnv("database.port", "DB_PORT")
-	v.BindEnv("database.user", "DB_USER")
-	v.BindEnv("database.password", "DB_PASSWORD")
-	v.BindEnv("database.name", "DB_NAME")
-	v.BindEnv("database.max_open_conns", "DB_MAX_OPEN_CONNS")
-	v.BindEnv("database.max_idle_conns", "DB_MAX_IDLE_CONNS")
+	_ = v.BindEnv("database.driver", "DB_DRIVER")
+	_ = v.BindEnv("database.host", "DB_HOST")
+	_ = v.BindEnv("database.port", "DB_PORT")
+	_ = v.BindEnv("database.user", "DB_USER")
+	_ = v.BindEnv("database.password", "DB_PASSWORD")
+	_ = v.BindEnv("database.name", "DB_NAME")
+	_ = v.BindEnv("database.max_open_conns", "DB_MAX_OPEN_CONNS")
+	_ = v.BindEnv("database.max_idle_conns", "DB_MAX_IDLE_CONNS")
 
 	// Sepay configuration
-	v.BindEnv("sepay.api_key", "SEPAY_API_KEY")
-	v.BindEnv("sepay.bank_id", "SEPAY_BANK_ID")
-	v.BindEnv("sepay.account_number", "SEPAY_ACCOUNT_NUMBER")
-	v.BindEnv("sepay.account_name", "SEPAY_ACCOUNT_NAME")
-	v.BindEnv("sepay.webhook_secret", "SEPAY_WEBHOOK_SECRET")
-	v.BindEnv("sepay.webhook_base_url", "SEPAY_WEBHOOK_BASE_URL")
+	_ = v.BindEnv("sepay.api_key", "SEPAY_API_KEY")
+	_ = v.BindEnv("sepay.bank_id", "SEPAY_BANK_ID")
+	_ = v.BindEnv("sepay.account_number", "SEPAY_ACCOUNT_NUMBER")
+	_ = v.BindEnv("sepay.account_name", "SEPAY_ACCOUNT_NAME")
+	_ = v.BindEnv("sepay.webhook_secret", "SEPAY_WEBHOOK_SECRET")
+	_ = v.BindEnv("sepay.webhook_base_url", "SEPAY_WEBHOOK_BASE_URL")
 }
 
 // IsProduction returns true if the application is running in production mode
