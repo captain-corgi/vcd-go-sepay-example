@@ -61,55 +61,55 @@ jobs:
           args: --timeout=5m
           skip-cache: true
 
-  build:
-    name: Build
-    needs: [test, lint]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  # build:
+  #   name: Build
+  #   needs: [test, lint]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.24.2"
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v4
+  #       with:
+  #         go-version: "1.24.2"
 
-      - name: Install dependencies
-        run: |
-          go mod download
-          go mod vendor
+  #     - name: Install dependencies
+  #       run: |
+  #         go mod download
+  #         go mod vendor
 
-      - name: Build
-        run: |
-          CGO_ENABLED=0 GOOS=linux go build -v -o sepay-integration ./cmd/server
-          ls -alh sepay-integration
+  #     - name: Build
+  #       run: |
+  #         CGO_ENABLED=0 GOOS=linux go build -v -o sepay-integration ./cmd/server
+  #         ls -alh sepay-integration
 
-      - name: List files in build directory
-        run: ls -alh
+  #     - name: List files in build directory
+  #       run: ls -alh
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: sepay-integration
-          path: ./sepay-integration
+  #     - name: Upload build artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: sepay-integration
+  #         path: ./sepay-integration
 
-  deploy:
-    name: Deploy
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: sepay-integration
+  # deploy:
+  #   name: Deploy
+  #   needs: build
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download build artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: sepay-integration
 
-      - name: Make binary executable
-        run: chmod +x sepay-integration
+  #     - name: Make binary executable
+  #       run: chmod +x sepay-integration
 
-      - name: Deploy to server
-        run: |
-          echo "Deployment would happen here"
-          # In a real implementation, you might use scp, ssh, Docker, or a cloud provider's deployment method
-          # Example: scp sepay-integration user@your-server.com:/path/to/deployment/
-          # Then restart the service via SSH
+  #     - name: Deploy to server
+  #       run: |
+  #         echo "Deployment would happen here"
+  #         # In a real implementation, you might use scp, ssh, Docker, or a cloud provider's deployment method
+  #         # Example: scp sepay-integration user@your-server.com:/path/to/deployment/
+  #         # Then restart the service via SSH
