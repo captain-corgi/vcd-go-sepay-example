@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/base64"
 	"net/http"
 	"strconv"
 
@@ -94,7 +95,7 @@ func (h *PaymentHandler) CreatePayment(c echo.Context) error {
 	// Convert QR code image to base64
 	qrImageBase64 := ""
 	if output.QRCode != nil && len(output.QRCode.Image) > 0 {
-		qrImageBase64 = "/9j/4AAQSkZJRgABAQAAAQABAAD..." // In real implementation, encode the QR image to base64
+		qrImageBase64 = base64.StdEncoding.EncodeToString(output.QRCode.Image)
 	}
 
 	// Create response
