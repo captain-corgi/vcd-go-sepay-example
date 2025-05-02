@@ -17,10 +17,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.24"
+          go-version: "1.24.2"
 
       - name: Install dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod vendor
 
       - name: Run tests
         run: go test -v ./...
@@ -40,12 +42,24 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.24"
+          go-version: "1.24.2"
+
+      - name: Install dependencies
+        run: |
+          go mod download
+          go mod vendor
+
+      - name: Generate mocks
+        run: |
+          go install github.com/golang/mock/mockgen@latest
+          go generate ./internal/domain/repository
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.55.2
+          version: v1.64.8
+          args: --timeout=5m
+          skip-cache: true
 
   build:
     name: Build
@@ -58,10 +72,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.24"
+          go-version: "1.24.2"
 
       - name: Install dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod vendor
 
       - name: Build
         run: |
@@ -73,7 +89,6 @@ jobs:
           name: sepay-integration
           path: sepay-integration
 
-  # Deployment job that only runs on pushing to main
   deploy:
     name: Deploy
     needs: build
@@ -88,7 +103,6 @@ jobs:
       - name: Make binary executable
         run: chmod +x sepay-integration
 
-      # Example deployment step - adapt according to your actual deployment method
       - name: Deploy to server
         run: |
           echo "Deployment would happen here"

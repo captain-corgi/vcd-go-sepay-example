@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/captain-corgi/vcd-go-sepay-example/internal/domain/entity"
-	"github.com/skip2/go-qrcode"
+	goqrcode "github.com/skip2/go-qrcode"
 )
 
 // VietQRGenerator generates QR codes according to VietQR standard
@@ -35,7 +35,7 @@ func (g *VietQRGenerator) Generate(data entity.VietQRData) (*entity.QRCode, erro
 	)
 
 	// Generate QR code image
-	qrBytes, err := qrcode.Encode(content, qrcode.Medium, g.defaultSize)
+	qrBytes, err := goqrcode.Encode(content, goqrcode.Medium, g.defaultSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate QR code: %w", err)
 	}
@@ -64,7 +64,7 @@ func (g *VietQRGenerator) SaveToFile(data entity.VietQRData, filepath string) er
 	)
 
 	// Write QR code to file
-	err := qrcode.WriteFile(content, qrcode.Medium, g.defaultSize, filepath)
+	err := goqrcode.WriteFile(content, goqrcode.Medium, g.defaultSize, filepath)
 	if err != nil {
 		return fmt.Errorf("failed to save QR code to file: %w", err)
 	}

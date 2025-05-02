@@ -6,6 +6,8 @@ import (
 	"github.com/captain-corgi/vcd-go-sepay-example/internal/domain/entity"
 )
 
+//go:generate mockgen --source=transaction_repository.go --destination=mocks/transaction_repository_mock.go --package=mocks
+
 // TransactionRepository defines the interface for transaction data access
 type TransactionRepository interface {
 	Create(ctx context.Context, transaction *entity.Transaction) error

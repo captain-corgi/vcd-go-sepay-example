@@ -7,81 +7,18 @@ import (
 	"time"
 
 	"github.com/captain-corgi/vcd-go-sepay-example/internal/domain/entity"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-
+	"github.com/captain-corgi/vcd-go-sepay-example/internal/domain/repository/mocks"
 	"github.com/captain-corgi/vcd-go-sepay-example/internal/usecase"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
-
-// Mock repositories
-type MockOrderRepository struct {
-	mock.Mock
-}
-
-func (m *MockOrderRepository) Create(ctx context.Context, order *entity.Order) error {
-	args := m.Called(ctx, order)
-	return args.Error(0)
-}
-
-func (m *MockOrderRepository) GetByID(ctx context.Context, id string) (*entity.Order, error) {
-	args := m.Called(ctx, id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.Order), args.Error(1)
-}
-
-func (m *MockOrderRepository) Update(ctx context.Context, order *entity.Order) error {
-	args := m.Called(ctx, order)
-	return args.Error(0)
-}
-
-func (m *MockOrderRepository) List(ctx context.Context, limit, offset int) ([]*entity.Order, error) {
-	args := m.Called(ctx, limit, offset)
-	return args.Get(0).([]*entity.Order), args.Error(1)
-}
-
-type MockTransactionRepository struct {
-	mock.Mock
-}
-
-func (m *MockTransactionRepository) Create(ctx context.Context, transaction *entity.Transaction) error {
-	args := m.Called(ctx, transaction)
-	return args.Error(0)
-}
-
-func (m *MockTransactionRepository) GetByID(ctx context.Context, id string) (*entity.Transaction, error) {
-	args := m.Called(ctx, id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.Transaction), args.Error(1)
-}
-
-func (m *MockTransactionRepository) GetByOrderID(ctx context.Context, orderID string) (*entity.Transaction, error) {
-	args := m.Called(ctx, orderID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.Transaction), args.Error(1)
-}
-
-func (m *MockTransactionRepository) Update(ctx context.Context, transaction *entity.Transaction) error {
-	args := m.Called(ctx, transaction)
-	return args.Error(0)
-}
-
-func (m *MockTransactionRepository) List(ctx context.Context, limit, offset int) ([]*entity.Transaction, error) {
-	args := m.Called(ctx, limit, offset)
-	return args.Get(0).([]*entity.Transaction), args.Error(1)
-}
 
 func TestProcessWebhookUseCase_Execute(t *testing.T) {
 	// Define test cases
 	testCases := []struct {
 		name          string
 		payload       *entity.WebhookPayload
-		setupMocks    func(*MockOrderRepository, *MockTransactionRepository)
+		setupMocks    func(*gomock.Controller, *mocks.MockOrderRepository, *mocks.MockTransactionRepository)
 		expectedError bool
 	}{
 		{
@@ -100,9 +37,9 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 				BankTransactionID: "FT12345678",
 				WebhookURL:        "https://example.com/webhook",
 			},
-			setupMocks: func(or *MockOrderRepository, tr *MockTransactionRepository) {
+			setupMocks: func(ctrl *gomock.Controller, or *mocks.MockOrderRepository, tr *mocks.MockTransactionRepository) {
 				// Setup GetByID to return a valid order
-				or.On("GetByID", mock.Anything, "ORDER123").Return(&entity.Order{
+				or.EXPECT().GetByID(gomock.Any(), "ORDER123").Return(&entity.Order{
 					ID:          "ORDER123",
 					CustomerID:  "customer1",
 					Amount:      100000,
@@ -113,7 +50,7 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 				}, nil)
 
 				// Setup GetByOrderID to return a valid transaction
-				tr.On("GetByOrderID", mock.Anything, "ORDER123").Return(&entity.Transaction{
+				tr.EXPECT().GetByOrderID(gomock.Any(), "ORDER123").Return(&entity.Transaction{
 					ID:               "txn_123",
 					OrderID:          "ORDER123",
 					Amount:           100000,
@@ -127,8 +64,8 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 				}, nil)
 
 				// Setup Update to succeed
-				tr.On("Update", mock.Anything, mock.AnythingOfType("*entity.Transaction")).Return(nil)
-				or.On("Update", mock.Anything, mock.AnythingOfType("*entity.Order")).Return(nil)
+				tr.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+				or.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 			},
 			expectedError: false,
 		},
@@ -138,8 +75,8 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 				Description: "NONEXISTENT",
 				Amount:      100000,
 			},
-			setupMocks: func(or *MockOrderRepository, tr *MockTransactionRepository) {
-				or.On("GetByID", mock.Anything, "NONEXISTENT").Return(nil, errors.New("order not found"))
+			setupMocks: func(ctrl *gomock.Controller, or *mocks.MockOrderRepository, tr *mocks.MockTransactionRepository) {
+				or.EXPECT().GetByID(gomock.Any(), "NONEXISTENT").Return(nil, errors.New("order not found"))
 			},
 			expectedError: true,
 		},
@@ -149,8 +86,8 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 				Description: "ORDER123",
 				Amount:      200000, // Incorrect amount
 			},
-			setupMocks: func(or *MockOrderRepository, tr *MockTransactionRepository) {
-				or.On("GetByID", mock.Anything, "ORDER123").Return(&entity.Order{
+			setupMocks: func(ctrl *gomock.Controller, or *mocks.MockOrderRepository, tr *mocks.MockTransactionRepository) {
+				or.EXPECT().GetByID(gomock.Any(), "ORDER123").Return(&entity.Order{
 					ID:     "ORDER123",
 					Amount: 100000, // Expected amount is different
 				}, nil)
@@ -166,15 +103,15 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 				Description:       "ORDER123",
 				BankTransactionID: "FT12345678",
 			},
-			setupMocks: func(or *MockOrderRepository, tr *MockTransactionRepository) {
+			setupMocks: func(ctrl *gomock.Controller, or *mocks.MockOrderRepository, tr *mocks.MockTransactionRepository) {
 				// Return valid order
-				or.On("GetByID", mock.Anything, "ORDER123").Return(&entity.Order{
+				or.EXPECT().GetByID(gomock.Any(), "ORDER123").Return(&entity.Order{
 					ID:     "ORDER123",
 					Amount: 100000,
 				}, nil)
 
 				// Return valid transaction
-				tr.On("GetByOrderID", mock.Anything, "ORDER123").Return(&entity.Transaction{
+				tr.EXPECT().GetByOrderID(gomock.Any(), "ORDER123").Return(&entity.Transaction{
 					ID:      "txn_123",
 					OrderID: "ORDER123",
 					Amount:  100000,
@@ -182,7 +119,7 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 				}, nil)
 
 				// But update fails
-				tr.On("Update", mock.Anything, mock.AnythingOfType("*entity.Transaction")).Return(errors.New("database error"))
+				tr.EXPECT().Update(gomock.Any(), gomock.Any()).Return(errors.New("database error"))
 			},
 			expectedError: true,
 		},
@@ -191,12 +128,15 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 	// Run test cases
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Create mocks
-			orderRepo := new(MockOrderRepository)
-			transactionRepo := new(MockTransactionRepository)
+			// Create controller and mocks
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			orderRepo := mocks.NewMockOrderRepository(ctrl)
+			transactionRepo := mocks.NewMockTransactionRepository(ctrl)
 
 			// Set up mock expectations
-			tc.setupMocks(orderRepo, transactionRepo)
+			tc.setupMocks(ctrl, orderRepo, transactionRepo)
 
 			// Create use case
 			uc := usecase.NewProcessWebhookUseCase(orderRepo, transactionRepo)
@@ -211,9 +151,7 @@ func TestProcessWebhookUseCase_Execute(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			// Verify that all expected mock calls were made
-			orderRepo.AssertExpectations(t)
-			transactionRepo.AssertExpectations(t)
+			// No need to explicitly verify expectations - gomock's controller will do this automatically
 		})
 	}
 }
