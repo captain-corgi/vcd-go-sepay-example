@@ -11,5 +11,41 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Dependency directories
+vendor/
+
+# Environment files
+.env
+.env.*
+*.env
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Build artifacts and binary outputs
+bin/
+build/
+sepay-service
+sepay-integration
+
+# Debug files
+debug
+__debug_bin
+
+# Certificates and sensitive files
+*.pem
+*.key
+*.crt
+*.p12
+certs/
+
+# Logs
+*.log
+logs/
