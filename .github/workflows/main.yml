@@ -1,0 +1,97 @@
+name: Sepay Integration CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Run code coverage
+        run: |
+          go test -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.55.2
+
+  build:
+    name: Build
+    needs: [test, lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build
+        run: |
+          CGO_ENABLED=0 GOOS=linux go build -v -o sepay-integration ./cmd/server
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sepay-integration
+          path: sepay-integration
+
+  # Deployment job that only runs on pushing to main
+  deploy:
+    name: Deploy
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: sepay-integration
+
+      - name: Make binary executable
+        run: chmod +x sepay-integration
+
+      # Example deployment step - adapt according to your actual deployment method
+      - name: Deploy to server
+        run: |
+          echo "Deployment would happen here"
+          # In a real implementation, you might use scp, ssh, Docker, or a cloud provider's deployment method
+          # Example: scp sepay-integration user@your-server.com:/path/to/deployment/
+          # Then restart the service via SSH
