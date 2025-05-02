@@ -82,12 +82,16 @@ jobs:
       - name: Build
         run: |
           CGO_ENABLED=0 GOOS=linux go build -v -o sepay-integration ./cmd/server
+          ls -alh sepay-integration
+
+      - name: List files in build directory
+        run: ls -alh
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: sepay-integration
-          path: sepay-integration
+          path: ./sepay-integration
 
   deploy:
     name: Deploy
