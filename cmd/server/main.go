@@ -32,11 +32,16 @@ func main() {
 		log.Fatal("Failed to load configuration", err)
 	}
 
+	// Log current environment
+	log.Info("Environment loaded", map[string]interface{}{
+		"environment": cfg.Environment,
+	})
+
 	// Initialize database
 	log.Info("Connecting to database")
 	db, err := persistence.NewMySQLConnection(cfg)
 	if err != nil {
-		log.Fatal("Failed to connect to database", err, map[string]interface{}{
+		log.Error("Failed to connect to database", err, map[string]interface{}{
 			"db_host": cfg.Database.Host,
 			"db_name": cfg.Database.Name,
 		})
@@ -78,8 +83,9 @@ func main() {
 	// Health check endpoint
 	e.GET("/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
-			"status": "UP",
-			"time":   time.Now().Format(time.RFC3339),
+			"status":      "UP",
+			"time":        time.Now().Format(time.RFC3339),
+			"environment": cfg.Environment,
 		})
 	})
 
@@ -87,11 +93,12 @@ func main() {
 	go func() {
 		address := fmt.Sprintf(":%d", cfg.Server.Port)
 		log.Info("Starting HTTP server", map[string]interface{}{
-			"port": cfg.Server.Port,
+			"port":        cfg.Server.Port,
+			"environment": cfg.Environment,
 		})
 
 		// Configure TLS if in production
-		if os.Getenv("GO_ENV") == "production" {
+		if cfg.IsProduction() {
 			if err := e.StartTLS(address, "certs/server.crt", "certs/server.key"); err != nil && err != http.ErrServerClosed {
 				log.Fatal("Failed to start HTTPS server", err)
 			}

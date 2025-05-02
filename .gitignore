@@ -49,3 +49,4 @@ certs/
 # Logs
 *.log
 logs/
+switch-env.sh

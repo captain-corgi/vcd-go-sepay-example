@@ -102,7 +102,8 @@ mod-vendor:
 run:
 	@echo "Starting application..."
 	@if [ -f $(ENV_FILE) ]; then \
-		export $$(cat $(ENV_FILE) | xargs) && $(GOCMD) run $(MAIN_PKG); \
+		set -a; . $(ENV_FILE); set +a; \
+		$(GOCMD) run $(MAIN_PKG); \
 	else \
 		$(GOCMD) run $(MAIN_PKG); \
 	fi
