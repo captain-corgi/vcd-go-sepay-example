@@ -26,14 +26,6 @@ func NewWebhookHandler(processWebhookUseCase *usecase.ProcessWebhookUseCase, con
 
 // HandleWebhook handles incoming webhook requests from Sepay
 func (h *WebhookHandler) HandleWebhook(c echo.Context) error {
-	// Verify API key (simple auth example)
-	apiKey := c.Request().Header.Get("X-API-Key")
-	if apiKey != h.config.Sepay.APIKey {
-		return c.JSON(http.StatusUnauthorized, map[string]string{
-			"error": "Unauthorized: invalid API key",
-		})
-	}
-
 	// Parse webhook data
 	var webhookPayload entity.WebhookPayload
 	if err := json.NewDecoder(c.Request().Body).Decode(&webhookPayload); err != nil {
