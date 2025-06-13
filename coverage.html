@@ -1,0 +1,416 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>entity: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/captain-corgi/vcd-go-sepay-example/internal/domain/entity/order.go (100.0%)</option>
+				
+				<option value="file1">github.com/captain-corgi/vcd-go-sepay-example/internal/domain/entity/qrcode.go (100.0%)</option>
+				
+				<option value="file2">github.com/captain-corgi/vcd-go-sepay-example/internal/domain/entity/webhook.go (100.0%)</option>
+				
+				<option value="file3">github.com/captain-corgi/vcd-go-sepay-example/internal/usecase/generate_payment_qr.go (100.0%)</option>
+				
+				<option value="file4">github.com/captain-corgi/vcd-go-sepay-example/internal/usecase/process_webhook.go (96.2%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package entity
+
+import (
+        "time"
+)
+
+// OrderStatus represents the current status of an order
+type OrderStatus string
+
+const (
+        OrderStatusPending   OrderStatus = "pending"
+        OrderStatusPaid      OrderStatus = "paid"
+        OrderStatusFailed    OrderStatus = "failed"
+        OrderStatusCancelled OrderStatus = "cancelled"
+)
+
+// Order represents a customer order that requires payment
+type Order struct {
+        ID          string      `json:"id"`
+        CustomerID  string      `json:"customer_id"`
+        Amount      int64       `json:"amount"` // Amount in Vietnamese Dong (VND)
+        Status      OrderStatus `json:"status"`
+        Description string      `json:"description"`
+        CreatedAt   time.Time   `json:"created_at"`
+        UpdatedAt   time.Time   `json:"updated_at"`
+}
+
+// IsValid returns whether the order is in a valid state
+func (o *Order) IsValid() bool <span class="cov8" title="1">{
+        return o.ID != "" &amp;&amp; o.Amount &gt; 0
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package entity
+
+// QRCode represents a payment QR code
+type QRCode struct {
+        Content string `json:"content"`
+        Size    int    `json:"size"`
+        Image   []byte `json:"image,omitempty"`
+}
+
+// VietQRData represents the data needed to generate a VietQR code
+type VietQRData struct {
+        BankID        string `json:"bank_id"`
+        AccountNumber string `json:"account_number"`
+        AccountName   string `json:"account_name"`
+        Amount        int64  `json:"amount"`
+        Description   string `json:"description"`
+}
+
+// NewVietQRData creates a new VietQRData instance
+func NewVietQRData(bankID, accountNumber, accountName string, amount int64, description string) VietQRData <span class="cov8" title="1">{
+        return VietQRData{
+                BankID:        bankID,
+                AccountNumber: accountNumber,
+                AccountName:   accountName,
+                Amount:        amount,
+                Description:   description,
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package entity
+
+// WebhookPayload represents the incoming webhook data from Sepay
+type WebhookPayload struct {
+        ID                int64  `json:"id"`                // Transaction ID on Sepay
+        Gateway           string `json:"gateway"`           // Bank name
+        TransactionDate   string `json:"transactionDate"`   // Transaction timestamp
+        AccountNumber     string `json:"accountNumber"`     // Bank account number
+        Amount            int64  `json:"amount"`            // Transaction amount (in VND)
+        Description       string `json:"description"`       // Transaction description (contains OrderID)
+        CustomerInfo      string `json:"customerInfo"`      // Customer information
+        CreditAmount      int64  `json:"creditAmount"`      // Credit amount
+        DebitAmount       int64  `json:"debitAmount"`       // Debit amount
+        Fee               int64  `json:"fee"`               // Transaction fee
+        BankTransactionID string `json:"bankTransactionId"` // Bank's transaction ID
+        WebhookURL        string `json:"webhookUrl"`        // Your webhook URL
+}
+
+// GetOrderID extracts the order ID from the description field
+func (wp *WebhookPayload) GetOrderID() string <span class="cov8" title="1">{
+        // In a real implementation, you might want to apply additional parsing logic
+        // if the description has a specific format. For simplicity, we assume the
+        // description directly contains the order ID.
+        return wp.Description
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package usecase
+
+import (
+        "context"
+        "fmt"
+        "time"
+
+        "github.com/captain-corgi/vcd-go-sepay-example/internal/domain/entity"
+        "github.com/captain-corgi/vcd-go-sepay-example/internal/domain/repository"
+        "github.com/captain-corgi/vcd-go-sepay-example/internal/infrastructure/config"
+        "github.com/google/uuid"
+)
+
+// QRCodeGenerator defines the interface for generating QR codes
+type QRCodeGenerator interface {
+        Generate(data entity.VietQRData) (*entity.QRCode, error)
+}
+
+// GeneratePaymentQRUseCase handles generation of payment QR codes
+type GeneratePaymentQRUseCase struct {
+        orderRepo       repository.OrderRepository
+        transactionRepo repository.TransactionRepository
+        qrGenerator     QRCodeGenerator
+        config          *config.Config
+}
+
+// NewGeneratePaymentQRUseCase creates a new payment QR code generation use case
+func NewGeneratePaymentQRUseCase(
+        orderRepo repository.OrderRepository,
+        transactionRepo repository.TransactionRepository,
+        qrGenerator QRCodeGenerator,
+        config *config.Config,
+) *GeneratePaymentQRUseCase <span class="cov8" title="1">{
+        return &amp;GeneratePaymentQRUseCase{
+                orderRepo:       orderRepo,
+                transactionRepo: transactionRepo,
+                qrGenerator:     qrGenerator,
+                config:          config,
+        }
+}</span>
+
+// OrderInput represents input data for creating an order
+type OrderInput struct {
+        CustomerID  string
+        Amount      int64
+        Description string
+}
+
+// PaymentQROutput represents the output data after QR code generation
+type PaymentQROutput struct {
+        OrderID       string
+        QRCode        *entity.QRCode
+        Amount        int64
+        ExpiresAt     time.Time
+        BankID        string
+        BankName      string
+        AccountNumber string
+        AccountName   string
+}
+
+// Execute generates a payment QR code for an order
+func (uc *GeneratePaymentQRUseCase) Execute(ctx context.Context, input OrderInput) (*PaymentQROutput, error) <span class="cov8" title="1">{
+        // Generate unique order ID
+        orderID := fmt.Sprintf("ord_%s", uuid.New().String()[:8])
+
+        // Create new order
+        order := &amp;entity.Order{
+                ID:          orderID,
+                CustomerID:  input.CustomerID,
+                Amount:      input.Amount,
+                Status:      entity.OrderStatusPending,
+                Description: input.Description,
+                CreatedAt:   time.Now(),
+                UpdatedAt:   time.Now(),
+        }
+
+        // Save order to database
+        if err := uc.orderRepo.Create(ctx, order); err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to create order: %w", err)
+        }</span>
+
+        // Create pending transaction
+        <span class="cov8" title="1">transaction := &amp;entity.Transaction{
+                ID:            fmt.Sprintf("txn_%s", uuid.New().String()[:8]),
+                OrderID:       orderID,
+                Amount:        input.Amount,
+                Status:        entity.TransactionStatusPending,
+                PaymentMethod: "bank_transfer",
+                Description:   orderID, // Include order ID in description for webhook matching
+                CreatedAt:     time.Now(),
+                UpdatedAt:     time.Now(),
+        }
+
+        if err := uc.transactionRepo.Create(ctx, transaction); err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to create transaction: %w", err)
+        }</span>
+
+        // Generate VietQR data
+        <span class="cov8" title="1">vietQRData := entity.VietQRData{
+                BankID:        uc.config.Sepay.BankID,
+                AccountNumber: uc.config.Sepay.AccountNumber,
+                AccountName:   uc.config.Sepay.AccountName,
+                Amount:        input.Amount,
+                Description:   orderID, // Use order ID as description for matching with webhook
+        }
+
+        // Generate QR code
+        qrCode, err := uc.qrGenerator.Generate(vietQRData)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, fmt.Errorf("failed to generate QR code: %w", err)
+        }</span>
+
+        // Construct response
+        <span class="cov8" title="1">expiresAt := time.Now().Add(24 * time.Hour) // QR code expires in 24 hours
+        output := &amp;PaymentQROutput{
+                OrderID:       orderID,
+                QRCode:        qrCode,
+                Amount:        input.Amount,
+                ExpiresAt:     expiresAt,
+                BankID:        uc.config.Sepay.BankID,
+                AccountNumber: uc.config.Sepay.AccountNumber,
+                AccountName:   uc.config.Sepay.AccountName,
+        }
+
+        return output, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package usecase
+
+import (
+        "context"
+        "fmt"
+        "time"
+
+        "github.com/captain-corgi/vcd-go-sepay-example/internal/domain/entity"
+        "github.com/captain-corgi/vcd-go-sepay-example/internal/domain/repository"
+)
+
+// ProcessWebhookUseCase handles processing of Sepay webhook data
+type ProcessWebhookUseCase struct {
+        orderRepo       repository.OrderRepository
+        transactionRepo repository.TransactionRepository
+}
+
+// NewProcessWebhookUseCase creates a new webhook processing use case
+func NewProcessWebhookUseCase(orderRepo repository.OrderRepository, transactionRepo repository.TransactionRepository) *ProcessWebhookUseCase <span class="cov8" title="1">{
+        return &amp;ProcessWebhookUseCase{
+                orderRepo:       orderRepo,
+                transactionRepo: transactionRepo,
+        }
+}</span>
+
+// Execute processes a webhook payload and updates relevant entities
+func (uc *ProcessWebhookUseCase) Execute(ctx context.Context, payload *entity.WebhookPayload) error <span class="cov8" title="1">{
+        // Extract order ID from description
+        orderID := payload.GetOrderID()
+        if orderID == "" </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid webhook: order ID not found in description")
+        }</span>
+
+        // Get order by ID
+        <span class="cov8" title="1">order, err := uc.orderRepo.GetByID(ctx, orderID)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to find order: %w", err)
+        }</span>
+
+        // Verify payment amount
+        <span class="cov8" title="1">if payload.Amount != order.Amount </span><span class="cov8" title="1">{
+                return fmt.Errorf("payment amount mismatch: expected %d, got %d", order.Amount, payload.Amount)
+        }</span>
+
+        // Find existing transaction or create a new one
+        <span class="cov8" title="1">transaction, err := uc.transactionRepo.GetByOrderID(ctx, orderID)
+        if err != nil </span><span class="cov8" title="1">{
+                // Create new transaction if not exists
+                transaction = &amp;entity.Transaction{
+                        ID:            fmt.Sprintf("txn_%d", payload.ID), // Use Sepay's transaction ID
+                        OrderID:       orderID,
+                        Amount:        payload.Amount,
+                        Status:        entity.TransactionStatusPending,
+                        PaymentMethod: "bank_transfer",
+                        Description:   payload.Description,
+                        CreatedAt:     time.Now(),
+                        UpdatedAt:     time.Now(),
+                }
+        }</span>
+
+        // Update transaction with webhook data
+        <span class="cov8" title="1">transaction.Status = entity.TransactionStatusCompleted
+        transaction.PaymentReference = payload.BankTransactionID
+        transaction.BankName = payload.Gateway
+        transaction.UpdatedAt = time.Now()
+
+        if transaction.ID == "" </span><span class="cov0" title="0">{
+                // Create new transaction
+                err = uc.transactionRepo.Create(ctx, transaction)
+        }</span> else<span class="cov8" title="1"> {
+                // Update existing transaction
+                err = uc.transactionRepo.Update(ctx, transaction)
+        }</span>
+
+        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to save transaction: %w", err)
+        }</span>
+
+        // Update order status
+        <span class="cov8" title="1">order.Status = entity.OrderStatusPaid
+        order.UpdatedAt = time.Now()
+        if err := uc.orderRepo.Update(ctx, order); err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to update order status: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
